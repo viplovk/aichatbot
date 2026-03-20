@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viplov - Your AI Study Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="text-2xl font-bold tracking-tighter flex items-center gap-2">
+            <i data-lucide="graduation-cap" class="text-indigo-400"></i>
+            VIPLOV
+        </div>
+        <div class="hidden md:flex space-x-8 text-sm font-medium">
+            <a href="#" class="hover:text-indigo-400 transition">Features</a>
+            <a href="#" class="hover:text-indigo-400 transition">Pricing</a>
+            <a href="#" class="hover:text-indigo-400 transition">About</a>
+        </div>
+        <button class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-full text-sm transition">
+            Get Started
+        </button>
+    </nav>
+
+    <header class="container mx-auto px-6 py-20 text-center">
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
+            Master Any Subject with Viplov
+        </h1>
+        <p class="text-gray-400 text-xl mb-10 max-w-2xl mx-auto">
+            Your personalized AI study partner that helps you learn faster, retain more, and ace your exams through intelligent tutoring.
+        </p>
+        <div class="flex flex-col md:flex-row justify-center gap-4">
+            <button class="bg-white text-gray-900 font-bold px-8 py-4 rounded-xl hover:bg-gray-200 transition">
+                Start Learning Now
+            </button>
+            <button class="glass-card px-8 py-4 rounded-xl hover:bg-white/20 transition">
+                Watch Demo
+            </button>
+        </div>
+    </header>
+
+    <section class="container mx-auto px-6 py-20">
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="glass-card p-8 rounded-2xl">
+                <i data-lucide="brain-circuit" class="text-indigo-400 mb-4 w-10 h-10"></i>
+                <h3 class="text-xl font-bold mb-2">Smart Summaries</h3>
+                <p class="text-gray-400">Upload your notes and get instant, concise summaries that highlight the core concepts.</p>
+            </div>
+            <div class="glass-card p-8 rounded-2xl">
+                <i data-lucide="message-square" class="text-indigo-400 mb-4 w-10 h-10"></i>
+                <h3 class="text-xl font-bold mb-2">24/7 AI Tutor</h3>
+                <p class="text-gray-400">Ask Viplov any question at any time. Get detailed explanations tailored to your level.</p>
+            </div>
+            <div class="glass-card p-8 rounded-2xl">
+                <i data-lucide="sparkles" class="text-indigo-400 mb-4 w-10 h-10"></i>
+                <h3 class="text-xl font-bold mb-2">Quiz Generation</h3>
+                <p class="text-gray-400">Automatically generate practice tests from your study materials to track your progress.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-gray-800 mt-20 py-10">
+        <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
+            <p>&copy; 2024 Viplov AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
