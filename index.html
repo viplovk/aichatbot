@@ -6,11 +6,14 @@
     <title>Viplov AI | Study Smart</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="importmap">
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+    </script>
     <style>
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .gradient-text { background: linear-gradient(90deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .loader { border-top-color: #6366f1; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-[#0f172a] text-slate-200 min-h-screen font-sans">
@@ -21,107 +24,92 @@
                 <div class="bg-indigo-600 p-1.5 rounded-lg"><i data-lucide="brain" class="text-white w-6 h-6"></i></div>
                 <span class="gradient-text">VIPLOV AI</span>
             </div>
-            <div class="flex gap-4">
-                <button class="text-sm font-medium hover:text-indigo-400 transition">Dashboard</button>
-                <button class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-bold transition">Pro Plan</button>
-            </div>
         </div>
     </nav>
 
     <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
-        
         <div class="lg:col-span-4 space-y-6">
             <div class="glass p-6 rounded-2xl">
-                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <i data-lucide="upload-cloud" class="text-indigo-400"></i> Upload Material
-                </h2>
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="upload-cloud"></i> Upload</h2>
                 <label class="border-2 border-dashed border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition mb-4 group">
-                    <input type="file" class="hidden" id="fileInput" accept="image/*,.pdf">
-                    <i data-lucide="file-text" class="w-12 h-12 text-slate-500 group-hover:text-indigo-400 mb-2"></i>
-                    <p class="text-sm text-slate-400 text-center">Drop your PDF or Photo here</p>
+                    <input type="file" class="hidden" id="fileInput" accept="image/*">
+                    <i data-lucide="image" class="w-12 h-12 text-slate-500 group-hover:text-indigo-400 mb-2"></i>
+                    <p class="text-sm text-slate-400 text-center" id="fileNameDisplay">Upload a Photo of your notes</p>
                 </label>
                 
                 <div class="space-y-2">
-                    <button onclick="simulateProcess('notes')" class="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl flex items-center justify-between transition">
-                        <span>Generate Notes</span>
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="simulateProcess('quiz')" class="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl flex items-center justify-between transition">
-                        <span>Create Quiz</span>
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="glass p-6 rounded-2xl">
-                <h3 class="font-bold mb-3">Recent Documents</h3>
-                <div class="text-sm text-slate-500 space-y-2">
-                    <div class="flex items-center gap-2 p-2 rounded hover:bg-slate-800/50 cursor-pointer">
-                        <i data-lucide="file" class="w-4 h-4"></i> Biology_Ch3.pdf
-                    </div>
-                    <div class="flex items-center gap-2 p-2 rounded hover:bg-slate-800/50 cursor-pointer">
-                        <i data-lucide="image" class="w-4 h-4"></i> History_Lecture_Photo.jpg
-                    </div>
+                    <button onclick="runAI('notes')" class="w-full bg-indigo-600 hover:bg-indigo-500 p-3 rounded-xl font-bold transition">Generate Notes</button>
+                    <button onclick="runAI('quiz')" class="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl transition">Create Quiz</button>
                 </div>
             </div>
         </div>
 
         <div class="lg:col-span-8 space-y-6">
             <div class="glass rounded-2xl min-h-[500px] flex flex-col">
-                <div class="border-b border-slate-800 p-4 flex justify-between items-center">
-                    <div class="flex gap-4">
-                        <button class="text-indigo-400 border-b-2 border-indigo-400 pb-1 px-2 font-medium">Output</button>
-                        <button class="text-slate-500 hover:text-slate-300 pb-1 px-2 transition">Flashcards</button>
-                    </div>
-                    <button class="text-slate-400 hover:text-white"><i data-lucide="download" class="w-5 h-5"></i></button>
-                </div>
-                
-                <div id="displayArea" class="p-8 prose prose-invert max-w-none">
+                <div id="displayArea" class="p-8 prose prose-invert max-w-none leading-relaxed">
                     <div class="flex flex-col items-center justify-center h-96 text-slate-600">
                         <i data-lucide="sparkles" class="w-12 h-12 mb-4 opacity-20"></i>
-                        <p>Upload a document to start Viplov AI magic</p>
+                        <p>Results will appear here...</p>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <script>
-        lucide.createIcons();
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        function simulateProcess(type) {
+        // CONFIG: Replace with your actual API Key
+        const API_KEY = "AIzaSyC1Nyt__Dz2iuNkErq8oa1vKqHB3ECmwEg";
+        const genAI = new GoogleGenerativeAI(API_KEY);
+
+        window.runAI = async (mode) => {
+            const fileInput = document.getElementById('fileInput');
             const display = document.getElementById('displayArea');
-            display.innerHTML = `<div class="flex items-center gap-3 animate-pulse text-indigo-400">
-                                    <i data-lucide="loader-2" class="animate-spin"></i> Viplov AI is analyzing...
-                                 </div>`;
-            lucide.createIcons();
+            
+            if (!fileInput.files[0]) {
+                alert("Please upload a photo first!");
+                return;
+            }
 
-            setTimeout(() => {
-                if(type === 'notes') {
-                    display.innerHTML = `
-                        <h1 class="text-2xl font-bold mb-4">Study Notes: Artificial Intelligence</h1>
-                        <ul class="space-y-4 list-disc pl-5">
-                            <li><strong>Neural Networks:</strong> Computing systems inspired by biological brains.</li>
-                            <li><strong>Machine Learning:</strong> Focuses on data and algorithms to imitate the way humans learn.</li>
-                            <li><strong>Key Takeaway:</strong> Deep learning is a subset of ML based on artificial neural networks.</li>
-                        </ul>
-                    `;
-                } else {
-                    display.innerHTML = `
-                        <h1 class="text-2xl font-bold mb-4">Quick Quiz</h1>
-                        <div class="space-y-6">
-                            <div class="p-4 bg-slate-800/50 rounded-lg">
-                                <p class="mb-3">1. What is the primary goal of Machine Learning?</p>
-                                <div class="grid gap-2">
-                                    <button class="text-left p-2 border border-slate-700 rounded hover:bg-indigo-600 transition">A) Manual coding of every rule</button>
-                                    <button class="text-left p-2 border border-slate-700 rounded hover:bg-indigo-600 transition">B) Improving performance through data</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }, 1500);
+            // Show Loading State
+            display.innerHTML = `<div class="flex justify-center items-center h-96"><div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div><p class="ml-4">Viplov AI is analyzing...</p></div>`;
+
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const file = fileInput.files[0];
+                const imageData = await fileToGenerativePart(file);
+
+                const prompt = mode === 'notes' 
+                    ? "Carefully read this image and provide structured study notes with bullet points and bold headers." 
+                    : "Create a 5-question multiple choice quiz based on the content of this image. Provide the correct answers at the end.";
+
+                const result = await model.generateContent([prompt, imageData]);
+                const response = await result.response;
+                
+                // Format response: Replace newlines with <br> and bold text for display
+                display.innerHTML = response.text().replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+            } catch (error) {
+                display.innerHTML = `<p class="text-red-400">Error: ${error.message}. Check if your API key is correct.</p>`;
+            }
+        };
+
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+            return { inlineData: { data: await base64EncodedDataPromise, mimeType: file.type } };
         }
+
+        // Display filename when selected
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            document.getElementById('fileNameDisplay').innerText = e.target.files[0].name;
+        });
+
+        lucide.createIcons();
     </script>
 </body>
 </html>
